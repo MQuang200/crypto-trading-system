@@ -45,6 +45,7 @@ public class TradeDAO {
         String sql = "SELECT * FROM TRANSACTIONS WHERE user_id = ?";
         return jdbcTemplate.query(sql, new Object[]{Integer.parseInt(userId)}, (rs, rowNum) -> {
             Transaction transaction = new Transaction();
+            transaction.setId(rs.getInt("id"));
             transaction.setUserId(rs.getInt("user_id"));
             transaction.setCurrencyPair(rs.getString("currency_pair"));
             transaction.setAmount(rs.getBigDecimal("amount"));
