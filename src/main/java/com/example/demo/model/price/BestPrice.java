@@ -12,14 +12,14 @@ import java.math.BigDecimal;
 @Setter
 @Getter
 public class BestPrice {
-    private String currentPair;
+    private String currencyPair;
     private BigDecimal bidPrice;
     private BigDecimal askPrice;
 
     @Override
     public String toString() {
         return "BestPrice{" +
-                "currentPair='" + currentPair + '\'' +
+                "currencyPair='" + currencyPair + '\'' +
                 ", bidPrice=" + bidPrice +
                 ", askPrice=" + askPrice +
                 '}';
