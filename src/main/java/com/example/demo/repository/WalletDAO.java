@@ -2,6 +2,7 @@ package com.example.demo.repository;
 
 import com.example.demo.model.wallet.WalletBalance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -17,6 +18,9 @@ import java.util.List;
 public class WalletDAO {
     @Autowired
     DataSource dataSource;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     public List<WalletBalance> getBalance(String userId) {
        List<WalletBalance> walletBalances = new ArrayList<>();
@@ -50,17 +54,7 @@ public class WalletDAO {
     }
 
     public void updateBalance(String userId, int currencyId, BigDecimal value) {
-        try (Connection connection = dataSource.getConnection()) {
-            String sql = "INSERT INTO ASSETS (user_id, currency_id, balance) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE balance = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, Integer.parseInt(userId));
-            statement.setInt(2, currencyId);
-            statement.setBigDecimal(3, value);
-            statement.setBigDecimal(4, value);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to update balance");
-        }
+        String sql = "INSERT INTO ASSETS (user_id, currency_id, balance) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE balance = ?";
+        jdbcTemplate.update(sql, Integer.parseInt(userId), currencyId, value, value);
     }
 }

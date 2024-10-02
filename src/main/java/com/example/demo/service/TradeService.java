@@ -24,7 +24,7 @@ public class TradeService {
     private WalletService walletService;
 
     @Transactional(rollbackFor = Exception.class)
-    public String buy(String userId, TradeRequest tradeRequest) throws Exception{
+    public String buy(String userId, TradeRequest tradeRequest) {
         BestPrice currentPrice = priceService.getBestPrice(tradeRequest.getCurrencyPair());
         List<WalletBalance> walletBalances = walletService.getBalance(userId);
 
@@ -50,8 +50,34 @@ public class TradeService {
         walletService.updateBalance(userId, tradeCurrencyBalance.getCurrencyId()
                     , tradeRequest.getAmount().add(tradeCurrencyBalance.getBalance()));
 
-        String result = tradeDAO.buy(userId, tradeRequest, "buy", currentPrice, total);
+        return tradeDAO.buy(userId, tradeRequest, "buy", currentPrice, total);
+    }
 
-        return result;
+    @Transactional
+    public String sell(String userId, TradeRequest tradeRequest) {
+        BestPrice currentPrice = priceService.getBestPrice(tradeRequest.getCurrencyPair());
+        List<WalletBalance> walletBalances = walletService.getBalance(userId);
+
+        String tradeCurrencySymbol = tradeRequest.getCurrencyPair().substring(0, tradeRequest.getCurrencyPair().length() - 4);
+        WalletBalance tradeCurrencyBalance = walletBalances.stream()
+                .filter(walletBalance -> walletBalance.getCurrencySymbol().equalsIgnoreCase(tradeCurrencySymbol))
+                .findFirst()
+                .orElse(null);
+
+        if (tradeCurrencyBalance == null || tradeCurrencyBalance.getBalance().compareTo(tradeRequest.getAmount()) < 0) {
+            return "Insufficient balance";
+        }
+
+        walletService.updateBalance(userId, tradeCurrencyBalance.getCurrencyId()
+                , tradeCurrencyBalance.getBalance().subtract(tradeRequest.getAmount()));
+
+        WalletBalance usdtBalance = walletBalances.stream()
+                .filter(walletBalance -> walletBalance.getCurrencySymbol().equals("USDT"))
+                .findFirst()
+                .orElse(null);
+        BigDecimal total = currentPrice.getBidPrice().multiply(tradeRequest.getAmount());
+        walletService.updateBalance(userId, usdtBalance.getCurrencyId(), usdtBalance.getBalance().add(total));
+
+        return tradeDAO.sell(userId, tradeRequest, "sell", currentPrice, total);
     }
 }

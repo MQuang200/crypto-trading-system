@@ -20,4 +20,9 @@ public class TradeController {
         return ResponseEntity.ok(tradeService.buy(user_id, tradeRequest));
 
     }
+    @PostMapping("/trade/sell/{user_id}")
+    public ResponseEntity<String> sell(@PathVariable String user_id, @RequestBody TradeRequest tradeRequest) throws Exception{
+        return ResponseEntity.ok(tradeService.sell(user_id, tradeRequest));
+
+    }
 }
