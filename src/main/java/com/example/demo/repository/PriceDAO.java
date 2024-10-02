@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 
 @Repository
@@ -33,6 +30,28 @@ public class PriceDAO {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+    }
 
+    public BestPrice getBestPrice(String pair){
+        try (Connection connection = datasource.getConnection()){
+            String sql = "SELECT * FROM PRICES WHERE currency_pair = ? ORDER BY created_at DESC LIMIT 1";
+            try (CallableStatement statement = connection.prepareCall(sql)){
+                statement.setString(1, pair.toUpperCase());
+                ResultSet rs = statement.executeQuery();
+                BestPrice result = null;
+
+                while (rs.next()){
+                    result = new BestPrice();
+                    result.setCurrentPair(rs.getString("currency_pair"));
+                    result.setBidPrice(rs.getBigDecimal("bid_price"));
+                    result.setAskPrice(rs.getBigDecimal("ask_price"));
+                }
+
+                return result;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
     }
 }
