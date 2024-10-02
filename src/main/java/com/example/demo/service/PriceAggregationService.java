@@ -29,23 +29,26 @@ import java.util.Set;
 public class PriceAggregationService {
     private final String BINANCE_URL = "https://api.binance.com/api/v3/ticker/bookTicker";
     private final String HUOBI_URL = "https://api.huobi.pro/market/tickers";
-    private final String BTCUSDT = "BTCUSDT";
-    private final String ETHUSDT = "ETHUSDT";
-    private Set<String> currencyPairs = new HashSet<>();
+    private final Set<String> currencyPairs = new HashSet<>();
 
     @Autowired
     PriceDAO priceDAO;
 
     @Scheduled(fixedRate = 10000)
     public void aggregate() throws IOException, InterruptedException {
-        currencyPairs.add(BTCUSDT);
-        currencyPairs.add(ETHUSDT);
+        currencyPairs.add("BTCUSDT");
+        currencyPairs.add("ETHUSDT");
+
+        // Create a new HttpClient
         HttpClient client = HttpClient.newHttpClient();
         System.out.println("Aggregating prices...");
 
         HttpResponse<String> binanceResponse = makeRequest(client, BINANCE_URL);
         HttpResponse<String> huobiResponse = makeRequest(client, HUOBI_URL);
 
+        // Deserialize the JSON response from Binance and Huobi
+
+        // Binance
         Gson binanceJsonHandler = new GsonBuilder()
                 .registerTypeAdapter(BinancePrice.class, new BinancePriceDeserializer())
                 .create();
@@ -54,6 +57,7 @@ public class PriceAggregationService {
         List<BinancePrice> filteredBinanceRes = binanceRes.stream().filter(elem ->
                 currencyPairs.contains(elem.getSymbol().toUpperCase())).toList();
 
+        // Huobi
         Gson huobiJsonHandler = new Gson();
         Type huobiPriceType = new TypeToken<List<HuobiPrice>>() {}.getType();
         JsonObject jsonHuobiPrice = huobiJsonHandler.fromJson(huobiResponse.body(), JsonObject.class);
@@ -61,6 +65,7 @@ public class PriceAggregationService {
         List<HuobiPrice> filteredHuobiRes = huobiRes.stream().filter(elem ->
                 currencyPairs.contains(elem.getSymbol().toUpperCase())).toList();
 
+        // Get the best bid and ask prices for each currency pair
         List<BestPrice> bestPrices = new ArrayList<>();
 
         for (String pair : currencyPairs) {
@@ -69,6 +74,7 @@ public class PriceAggregationService {
             bestPrices.add(bestPrice);
         }
 
+        // Save the best prices to the database
         priceDAO.savePrice(bestPrices);
     }
 
