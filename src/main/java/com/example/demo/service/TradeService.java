@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
+import com.example.demo.model.Transaction;
 import com.example.demo.model.price.BestPrice;
 import com.example.demo.model.request.TradeRequest;
-import com.example.demo.model.response.TradeResponse;
 import com.example.demo.model.wallet.WalletBalance;
 import com.example.demo.repository.PriceDAO;
 import com.example.demo.repository.TradeDAO;
@@ -79,5 +79,9 @@ public class TradeService {
         walletService.updateBalance(userId, usdtBalance.getCurrencyId(), usdtBalance.getBalance().add(total));
 
         return tradeDAO.sell(userId, tradeRequest, "sell", currentPrice, total);
+    }
+
+    public List<Transaction> getTransactionHistory(String userId) {
+        return tradeDAO.getTransactionHistory(userId);
     }
 }

@@ -1,8 +1,8 @@
 package com.example.demo.repository;
 
+import com.example.demo.model.Transaction;
 import com.example.demo.model.price.BestPrice;
 import com.example.demo.model.request.TradeRequest;
-import com.example.demo.model.response.TradeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Repository
 public class TradeDAO {
@@ -38,5 +39,20 @@ public class TradeDAO {
         jdbcTemplate.update(sql, Integer.parseInt(userId), tradeRequest.getCurrencyPair(), tradeRequest.getAmount(),
                 type, currentPrice.getBidPrice(), total, new Timestamp(System.currentTimeMillis()));
         return "Success sell";
+    }
+
+    public List<Transaction> getTransactionHistory(String userId) {
+        String sql = "SELECT * FROM TRANSACTIONS WHERE user_id = ?";
+        return jdbcTemplate.query(sql, new Object[]{Integer.parseInt(userId)}, (rs, rowNum) -> {
+            Transaction transaction = new Transaction();
+            transaction.setUserId(rs.getInt("user_id"));
+            transaction.setCurrencyPair(rs.getString("currency_pair"));
+            transaction.setAmount(rs.getBigDecimal("amount"));
+            transaction.setType(rs.getString("type"));
+            transaction.setPrice(rs.getBigDecimal("price"));
+            transaction.setTotal(rs.getBigDecimal("total"));
+            transaction.setCreatedAt(rs.getTimestamp("created_at"));
+            return transaction;
+        });
     }
 }

@@ -1,4 +1,4 @@
-package com.example.demo.model.response;
+package com.example.demo.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,21 +10,15 @@ import java.sql.Timestamp;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-public class TradeResponse {
-    private String status;
-    private String message;
-    private int transactionId;
+@Setter
+public class Transaction {
+    private int id;
+    private int userId;
     private String currencyPair;
-    private String type;
     private BigDecimal amount;
+    private String type;
     private BigDecimal price;
     private BigDecimal total;
-    private Timestamp timestamp;
-
-    public TradeResponse(String message) {
-        this.status = "failed";
-        this.message = message;
-    }
+    private Timestamp createdAt;
 }
