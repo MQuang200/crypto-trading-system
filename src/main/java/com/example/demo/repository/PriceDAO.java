@@ -25,6 +25,7 @@ public class PriceDAO {
                     statement.addBatch();
                 }
                 statement.executeBatch();
+                connection.commit();
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
